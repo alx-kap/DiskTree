@@ -1,12 +1,17 @@
 #!/bin/zsh
-# Builds DiskTree.app into ./build
+# Builds DiskTree.app into ./build. Pass --universal for an Apple silicon + Intel build.
 set -euo pipefail
 cd "$(dirname "$0")"
-swift build -c release
+# Build outside iCloud Drive: its extended attributes make codesign fail.
+SCRATCH=~/Library/Caches/DiskTree/swiftpm
+FLAGS=(-c release --scratch-path "$SCRATCH")
+[[ "${1:-}" == "--universal" ]] && FLAGS+=(--arch arm64 --arch x86_64)
+swift build "${FLAGS[@]}"
+BIN="$(swift build "${FLAGS[@]}" --show-bin-path)/DiskTree"
 APP=build/DiskTree.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp .build/release/DiskTree "$APP/Contents/MacOS/"
+cp "$BIN" "$APP/Contents/MacOS/"
 cp Support/Info.plist "$APP/Contents/"
 if [[ ! -f build/AppIcon.icns ]]; then
   ICONSET=build/AppIcon.iconset
@@ -19,5 +24,6 @@ if [[ ! -f build/AppIcon.icns ]]; then
   iconutil -c icns "$ICONSET" -o build/AppIcon.icns
 fi
 cp build/AppIcon.icns "$APP/Contents/Resources/"
-codesign --force --sign - "$APP" >/dev/null 2>&1
-echo "Built $APP"
+xattr -cr "$APP"
+codesign --force --sign - "$APP"
+echo "Built $PWD/$APP"

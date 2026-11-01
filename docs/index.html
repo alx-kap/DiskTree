@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DiskTree: free disk space analyzer for Mac. See what's taking up space.</title>
+<meta name="description" content="Mac storage full? DiskTree maps your disk as a treemap, finds your largest files, and safely cleans up caches, Xcode data, old downloads and backups. Free, open source, native macOS.">
+<link rel="canonical" href="https://alx-kap.github.io/DiskTree/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="DiskTree: see what's filling up your Mac">
+<meta property="og:description" content="A free, open-source disk space analyzer for macOS. Map your storage, find the space hogs, clean up safely, undo anything.">
+<meta property="og:url" content="https://alx-kap.github.io/DiskTree/">
+<meta property="og:image" content="https://alx-kap.github.io/DiskTree/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f3ede2">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "DiskTree",
+  "operatingSystem": "macOS 14 or later",
+  "applicationCategory": "UtilitiesApplication",
+  "description": "A native disk space analyzer for Mac that maps your storage as a treemap, finds large files, and cleans up safely.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "downloadUrl": "https://github.com/alx-kap/DiskTree/releases/latest/download/DiskTree.zip",
+  "license": "https://opensource.org/licenses/MIT",
+  "author": { "@type": "Person", "name": "Alex Kaplewicz" }
+}
+</script>
+<style>
+:root {
+  --paper: #f3ede2;
+  --paper-2: #fbf8f2;
+  --ink: #141414;
+  --muted: #5d574e;
+  --blue: #7fb2ec;
+  --orange: #f0ac64;
+  --green: #86d696;
+  --pink: #ea9fe8;
+  --yellow: #f8d95c;
+  --red: #ef8a7a;
+  --teal: #7fd3cf;
+  --gray: #c9c2b6;
+  --navy: #26305a;
+  --rule: 3px;
+  --shadow: 6px 6px 0 var(--ink);
+  --wide: 1240px;
+  --display: "Archivo", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 17px/1.55 var(--display);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; }
+.wrap { max-width: var(--wide); margin: 0 auto; padding: 0 24px; }
+.mono { font-family: var(--mono); }
+.kicker {
+  font: 600 12px/1 var(--mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+h1, h2, h3 { font-family: var(--display); margin: 0; letter-spacing: -.01em; }
+h2 {
+  font-size: clamp(40px, 6.4vw, 84px);
+  font-stretch: 72%;
+  font-weight: 850;
+  line-height: .92;
+  text-transform: uppercase;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  font: 800 18px/1 var(--display);
+  font-stretch: 95%;
+  padding: 18px 26px;
+  border: var(--rule) solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  box-shadow: 6px 6px 0 var(--yellow), 6px 6px 0 var(--rule) var(--ink);
+  transition: transform .12s ease, box-shadow .12s ease;
+  cursor: pointer;
+}
+.btn:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--yellow); }
+.btn:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0 var(--yellow); }
+.btn small { font: 500 12px/1.2 var(--mono); opacity: .75; display: block; margin-top: 4px; }
+.btn.ghost { background: var(--paper-2); color: var(--ink); box-shadow: var(--shadow); }
+.btn.ghost:hover { box-shadow: 8px 8px 0 var(--ink); }
+.btn svg { flex: none; }
+
+/* Nav */
+nav.top {
+  border-bottom: var(--rule) solid var(--ink);
+  background: var(--paper);
+  position: sticky; top: 0; z-index: 20;
+}
+nav.top .wrap { display: flex; align-items: center; gap: 28px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 850; font-size: 21px; font-stretch: 85%; }
+.brand img { width: 34px; height: 34px; }
+nav.top .links { display: flex; gap: 24px; margin-left: auto; font-weight: 600; font-size: 15px; }
+nav.top .links a { text-decoration: none; }
+nav.top .links a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+nav.top .get {
+  font: 800 15px/1 var(--display); text-decoration: none;
+  background: var(--yellow); border: var(--rule) solid var(--ink); padding: 10px 16px;
+}
+nav.top .get:hover { background: var(--ink); color: var(--yellow); }
+
+/* Hero */
+.hero { border-bottom: var(--rule) solid var(--ink); }
+.hero .wrap {
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px;
+  padding-top: 48px; padding-bottom: 64px; align-items: center;
+}
+.hero h1 {
+  font-size: clamp(56px, 6.4vw, 100px);
+  font-stretch: 64%;
+  font-weight: 900;
+  line-height: .86;
+  text-transform: uppercase;
+  letter-spacing: -.005em;
+}
+.hero h1 .hl { background: var(--yellow); padding: 0 .06em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.hero .lede { font-size: 20px; max-width: 30ch; margin: 26px 0 34px; color: #2a2723; }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.meta { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 8px; }
+.meta span { font: 500 12px/1 var(--mono); border: 2px solid var(--ink); padding: 7px 9px; background: var(--paper-2); }
+
+/* Demo disk */
+.disk {
+  border: var(--rule) solid var(--ink);
+  background: var(--paper-2);
+  box-shadow: 10px 10px 0 var(--ink);
+}
+.disk-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px; border-bottom: var(--rule) solid var(--ink);
+  font: 500 13px/1.2 var(--mono);
+}
+.disk-head b { font: 800 15px/1 var(--display); }
+.bar { flex: 1; height: 14px; border: 2px solid var(--ink); background: var(--paper-2); position: relative; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--red); transition: width .6s cubic-bezier(.2,.8,.2,1), background .4s; }
+.bar i.ok { background: var(--green); }
+.map { position: relative; height: 430px; background: var(--ink); }
+.tile {
+  position: absolute; padding: 8px 9px; overflow: hidden;
+  border: 0; text-align: left; color: var(--ink); font: inherit; cursor: pointer;
+  transition: left .55s cubic-bezier(.2,.8,.2,1), top .55s cubic-bezier(.2,.8,.2,1), width .55s cubic-bezier(.2,.8,.2,1), height .55s cubic-bezier(.2,.8,.2,1), filter .15s, opacity .3s;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+}
+.map.instant .tile { transition: none; }
+.tile:hover { filter: brightness(1.07) saturate(1.1); }
+.tile:focus-visible { outline: 3px solid var(--paper); outline-offset: -6px; }
+.tile .n { font: 750 14px/1.12 var(--display); font-stretch: 85%; }
+.tile .s { font: 500 12px/1 var(--mono); }
+.tile .t {
+  margin-top: auto; font: 600 9.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  border: 1.5px solid var(--ink); padding: 3px 5px; background: rgba(255,255,255,.45);
+}
+.tile.small .n, .tile.small .t { display: none; }
+.tile.tiny > * { display: none; }
+.tile.free {
+  cursor: default; filter: none;
+  background: repeating-linear-gradient(135deg, var(--paper-2) 0 9px, #e6dfd2 9px 11px);
+}
+.tile.free .n { font-size: 15px; }
+.tile.gone { opacity: 0; }
+.tile.shake { animation: shake .4s; }
+@keyframes shake { 20%,60% { transform: translateX(-5px) } 40%,80% { transform: translateX(5px) } }
+.disk-foot {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 14px; border-top: var(--rule) solid var(--ink);
+  font: 500 13px/1.3 var(--mono); min-height: 58px;
+}
+.freed { font: 850 22px/1 var(--display); font-stretch: 80%; }
+.freed span { background: var(--green); padding: 2px 6px; border: 2px solid var(--ink); }
+.toast { flex: 1; min-width: 200px; color: var(--muted); }
+.reset { font: 600 12px/1 var(--mono); background: none; border: 2px solid var(--ink); padding: 7px 9px; cursor: pointer; }
+.reset:hover { background: var(--ink); color: var(--paper); }
+.hint { font: 500 12px/1.4 var(--mono); color: var(--muted); margin: 18px 0 0; display: flex; gap: 14px; flex-wrap: wrap; }
+.hint i { display: inline-block; width: 11px; height: 11px; border: 1.5px solid var(--ink); vertical-align: -1px; margin-right: 5px; }
+
+/* Ticker */
+.ticker { background: var(--ink); color: var(--paper); border-bottom: var(--rule) solid var(--ink); overflow: hidden; white-space: nowrap; }
+.ticker div { display: inline-block; padding: 14px 0; animation: tick 48s linear infinite; font: 500 14px/1 var(--mono); }
+.ticker b { color: var(--yellow); font-weight: 600; margin: 0 22px; }
+@keyframes tick { to { transform: translateX(-50%); } }
+
+/* Sections */
+section { padding: 104px 0; border-bottom: var(--rule) solid var(--ink); }
+.sec-head { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; margin-bottom: 52px; }
+.sec-head p { font-size: 19px; max-width: 46ch; margin: 0; color: #2a2723; }
+
+/* Showcase */
+.shot {
+  border: var(--rule) solid var(--ink); background: var(--navy);
+  box-shadow: 14px 14px 0 var(--ink); padding: clamp(14px, 3vw, 40px);
+}
+.shot img { width: 100%; height: auto; border-radius: 12px; }
+.callouts { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 48px; border: var(--rule) solid var(--ink); background: var(--paper-2); }
+.callouts div { padding: 22px 22px 26px; border-right: var(--rule) solid var(--ink); }
+.callouts div:last-child { border-right: 0; }
+.callouts .num { font: 600 12px/1 var(--mono); }
+.callouts h3 { font-size: 24px; font-stretch: 80%; font-weight: 850; margin: 12px 0 6px; text-transform: uppercase; }
+.callouts p { margin: 0; font-size: 15.5px; color: #2a2723; }
+
+/* Feature grid (a treemap of features) */
+.grid {
+  display: grid; gap: var(--rule); background: var(--ink); border: var(--rule) solid var(--ink);
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-areas:
+    "find find find find clean clean"
+    "find find find find clean clean"
+    "undo undo safe safe safe safe"
+    "dev  dev  dev  priv priv fast";
+}
+.cell { background: var(--paper-2); padding: 30px; position: relative; overflow: hidden; }
+.cell h3 { font-size: 32px; font-stretch: 72%; font-weight: 900; text-transform: uppercase; line-height: .95; margin: 10px 0 12px; }
+.cell p { margin: 0; font-size: 16px; max-width: 48ch; }
+.cell ul { list-style: none; padding: 0; margin: 16px 0 0; font: 500 13.5px/1.45 var(--mono); }
+.cell li { padding: 7px 0; border-top: 1.5px solid rgba(20,20,20,.25); }
+.cell li b { font-weight: 600; }
+.c-find { grid-area: find; background: var(--blue); }
+.c-find img { margin-top: 26px; border: var(--rule) solid var(--ink); border-radius: 10px; box-shadow: var(--shadow); }
+.c-clean { grid-area: clean; background: var(--yellow); }
+.c-undo { grid-area: undo; background: var(--pink); }
+.c-safe { grid-area: safe; }
+.c-priv { grid-area: priv; background: var(--green); }
+.c-dev { grid-area: dev; background: var(--orange); }
+.c-fast { grid-area: fast; }
+.tag { display: inline-block; font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; border: 1.5px solid var(--ink); padding: 4px 6px; margin-right: 6px; background: var(--paper-2); }
+.tag.g { background: var(--green); } .tag.o { background: var(--orange); } .tag.b { background: var(--blue); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.chips span { font: 500 13px/1 var(--mono); border: 2px solid var(--ink); background: var(--paper-2); padding: 8px 10px; }
+.big-num { font: 900 76px/1 var(--display); font-stretch: 62%; }
+
+/* Gallery */
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.gallery figure { margin: 0; }
+.gallery .frame { border: var(--rule) solid var(--ink); background: var(--navy); padding: 12px; box-shadow: var(--shadow); }
+.gallery img { border-radius: 7px; width: 100%; height: auto; }
+.gallery figcaption { font: 500 13px/1.4 var(--mono); margin-top: 16px; }
+.gallery figcaption b { font: 850 18px/1.1 var(--display); font-stretch: 85%; display: block; margin-bottom: 4px; text-transform: uppercase; }
+
+/* Install */
+#install { background: var(--paper-2); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); border: var(--rule) solid var(--ink); background: var(--paper); }
+.step { padding: 30px; border-right: var(--rule) solid var(--ink); display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.step:last-child { border-right: 0; }
+.step .badge { width: 46px; height: 46px; border: var(--rule) solid var(--ink); display: grid; place-items: center; font: 900 24px/1 var(--display); }
+.step:nth-child(1) .badge { background: var(--yellow); }
+.step:nth-child(2) .badge { background: var(--blue); }
+.step:nth-child(3) .badge { background: var(--green); }
+.step h3 { font-size: 30px; font-stretch: 75%; font-weight: 900; text-transform: uppercase; line-height: 1; }
+.step p { margin: 0; font-size: 15.5px; color: #2a2723; }
+.step .btn { align-self: flex-start; margin-top: auto; }
+.code { position: relative; margin-top: auto; }
+.code pre {
+  margin: 0; background: var(--ink); color: var(--paper); padding: 16px 16px 16px 16px; padding-right: 64px;
+  font: 500 13px/1.6 var(--mono); white-space: pre-wrap; word-break: break-all; border: var(--rule) solid var(--ink);
+}
+.code pre .p { color: var(--yellow); user-select: none; }
+.copy {
+  position: absolute; top: 9px; right: 9px; font: 600 11px/1 var(--mono); text-transform: uppercase;
+  background: var(--paper); color: var(--ink); border: 2px solid var(--paper); padding: 6px 8px; cursor: pointer;
+}
+.copy:hover { background: var(--yellow); border-color: var(--yellow); }
+.note { margin-top: 30px; display: flex; gap: 18px; align-items: flex-start; border: var(--rule) solid var(--ink); padding: 18px 22px; background: var(--paper); }
+.note > b { font: 850 13px/1 var(--mono); background: var(--orange); border: 2px solid var(--ink); padding: 6px 8px; white-space: nowrap; }
+.note p { margin: 0; font-size: 15.5px; }
+
+/* FAQ */
+.faq { border-top: var(--rule) solid var(--ink); }
+.faq details { border-bottom: var(--rule) solid var(--ink); }
+.faq summary {
+  list-style: none; cursor: pointer; padding: 24px 56px 24px 0; position: relative;
+  font: 850 clamp(22px, 2.6vw, 30px)/1.1 var(--display); font-stretch: 80%;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; position: absolute; right: 0; top: 50%; translate: 0 -50%;
+  width: 38px; height: 38px; border: var(--rule) solid var(--ink); display: grid; place-items: center;
+  font: 700 22px/1 var(--mono); background: var(--paper-2); transition: rotate .2s;
+}
+.faq details[open] summary::after { rotate: 45deg; background: var(--yellow); }
+.faq details p { margin: -6px 0 26px; max-width: 70ch; font-size: 17px; color: #2a2723; }
+.faq code, .step code { font: 500 .9em var(--mono); background: rgba(20,20,20,.08); padding: 1px 5px; }
+
+/* Final CTA */
+.final { background: var(--yellow); padding: 120px 0; text-align: left; }
+.final .wrap { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: center; }
+.final h2 { font-size: clamp(54px, 9vw, 140px); line-height: .84; font-stretch: 62%; }
+.final p { font-size: 19px; margin: 0 0 30px; max-width: 36ch; }
+.final .btn { box-shadow: 8px 8px 0 var(--paper-2), 8px 8px 0 var(--rule) var(--ink); font-size: 22px; padding: 22px 30px; }
+.final .btn:hover { box-shadow: 10px 10px 0 var(--ink); }
+
+footer { padding: 34px 0 44px; font: 500 13px/1.6 var(--mono); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+footer .brand { font-size: 17px; }
+footer nav { display: flex; gap: 20px; margin-left: auto; flex-wrap: wrap; }
+
+/* Responsive */
+@media (max-width: 1020px) {
+  .hero .wrap { grid-template-columns: 1fr; gap: 48px; padding-top: 44px; }
+  .sec-head { grid-template-columns: 1fr; gap: 18px; }
+  .callouts { grid-template-columns: 1fr 1fr; }
+  .callouts div:nth-child(2) { border-right: 0; }
+  .callouts div:nth-child(-n+2) { border-bottom: var(--rule) solid var(--ink); }
+  .grid { grid-template-columns: 1fr 1fr; grid-template-areas: "find find" "clean clean" "undo safe" "dev dev" "fast priv"; }
+  .gallery { grid-template-columns: 1fr; gap: 40px; }
+  .steps { grid-template-columns: 1fr; }
+  .step { border-right: 0; border-bottom: var(--rule) solid var(--ink); }
+  .step:last-child { border-bottom: 0; }
+  .final .wrap { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  nav.top .links a:not(.get) { display: none; }
+  section { padding: 72px 0; }
+  .map { height: 360px; }
+  .disk { box-shadow: 6px 6px 0 var(--ink); }
+  .disk-head .label { display: none; }
+  .callouts { grid-template-columns: 1fr; }
+  .callouts div { border-right: 0; border-bottom: var(--rule) solid var(--ink); }
+  .callouts div:last-child { border-bottom: 0; }
+  .grid { grid-template-columns: 1fr; grid-template-areas: "find" "clean" "undo" "safe" "dev" "fast" "priv"; }
+  .cell { padding: 24px; }
+  .shot { box-shadow: 7px 7px 0 var(--ink); }
+  .btn { padding: 16px 20px; font-size: 17px; }
+  .final { padding: 84px 0; }
+  .note { flex-direction: column; gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .ticker div { animation: none; }
+  .tile { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="icon.png" alt="" width="34" height="34">DiskTree</a>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/alx-kap/DiskTree">GitHub</a>
+      <a class="get" href="https://github.com/alx-kap/DiskTree/releases/latest/download/DiskTree.zip">Download</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <p class="kicker">Free disk space analyzer for macOS</p>
+      <h1>Your Mac is full. <span class="hl">Here's why.</span></h1>
+      <p class="lede">DiskTree draws your whole disk to scale, so the forgotten backups and build folders eating your storage are impossible to miss. Then it helps you clear them out, safely.</p>
+      <div class="ctas">
+        <a class="btn" href="https://github.com/alx-kap/DiskTree/releases/latest/download/DiskTree.zip">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M12 3v13m0 0-5-5m5 5 5-5M4 20h16"/></svg>
+          <span>Download for Mac<small>Free · 1.4 MB · macOS 14+</small></span>
+        </a>
+        <a class="btn ghost" href="https://github.com/alx-kap/DiskTree">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+          Source on GitHub
+        </a>
+      </div>
+      <div class="meta"><span>Apple silicon + Intel</span><span>Open source · MIT</span><span>Nothing leaves your Mac</span></div>
+    </div>
+
+    <div>
+      <div class="disk" aria-label="Interactive demo: a pretend Mac disk drawn as a treemap">
+        <div class="disk-head">
+          <b>Macintosh HD</b>
+          <div class="bar" aria-hidden="true"><i id="usedBar"></i></div>
+          <span id="usedText">457 of 494 GB</span>
+        </div>
+        <div class="map" id="map"></div>
+        <div class="disk-foot">
+          <div class="freed">Freed <span id="freed">0 GB</span></div>
+          <div class="toast" id="toast" aria-live="polite">Try it: click a block to clean it up.</div>
+          <button class="reset" id="reset" type="button">Refill disk</button>
+        </div>
+      </div>
+      <p class="hint">
+        <span>↑ A pretend disk, not yours. Tags show what the real app would do with each block.</span>
+      </p>
+    </div>
+  </div>
+</header>
+
+<div class="ticker" aria-hidden="true"><div>
+  <b>■</b>Xcode DerivedData<b>■</b>iPhone backups from 2022<b>■</b>node_modules × 37<b>■</b>Installers you already installed<b>■</b>Simulator caches<b>■</b>App caches<b>■</b>Log files nobody reads<b>■</b>Old screen recordings<b>■</b>iOS DeviceSupport<b>■</b>npm, pnpm, Gradle &amp; Cargo caches<b>■</b>That 16 GB virtual machine
+  <b>■</b>Xcode DerivedData<b>■</b>iPhone backups from 2022<b>■</b>node_modules × 37<b>■</b>Installers you already installed<b>■</b>Simulator caches<b>■</b>App caches<b>■</b>Log files nobody reads<b>■</b>Old screen recordings<b>■</b>iOS DeviceSupport<b>■</b>npm, pnpm, Gradle &amp; Cargo caches<b>■</b>That 16 GB virtual machine
+</div></div>
+
+<section id="map-section">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Every byte,<br>drawn to scale.</h2>
+      <p>System Settings gives you one gray bar labeled "System Data." DiskTree gives you a map. Each block is a folder or file, sized by how much room it really takes. Click a folder to dive in.</p>
+    </div>
+    <div class="shot">
+      <img src="screenshots/explore.png" width="2400" height="1600" loading="lazy" alt="DiskTree's Explore view: a treemap of a home folder with Documents, Movies, Library, Downloads and Pictures as nested colored blocks, above a sortable list of folders with sizes">
+    </div>
+    <div class="callouts">
+      <div><span class="num">01 / SCAN</span><h3>Pick a place</h3><p>Your home folder, the whole disk, Applications, or any folder or external drive.</p></div>
+      <div><span class="num">02 / MAP</span><h3>See it all</h3><p>A zoomable treemap and a sorted list, color-coded by kind: video, photos, apps, archives, code.</p></div>
+      <div><span class="num">03 / CLEAN</span><h3>Clear it out</h3><p>Select anything and press Delete, or take the cleanup suggestions.</p></div>
+      <div><span class="num">04 / UNDO</span><h3>Change your mind</h3><p>Everything goes to the Trash first. Put it back with one click.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Cleanup with<br>judgment.</h2>
+      <p>Most cleaners either do nothing useful or delete too much. DiskTree knows where Macs quietly fill up, tells you honestly what's safe, and refuses to touch what isn't.</p>
+    </div>
+    <div class="grid">
+      <div class="cell c-find">
+        <span class="kicker">Largest files</span>
+        <h3>Find the giants</h3>
+        <p>Every file over 50 MB in one sortable list, filtered by size and kind. Disk images, old VMs and 4K exports float straight to the top.</p>
+        <img src="screenshots/largest.png" width="2400" height="1600" loading="lazy" alt="DiskTree's Largest Files list sorted by size: virtual machine disks, a language model, an Xcode installer and 4K videos">
+      </div>
+      <div class="cell c-clean">
+        <span class="kicker">Suggestions</span>
+        <h3>Honest labels</h3>
+        <p>Every suggestion says how safe it is before you touch it.</p>
+        <ul>
+          <li><span class="tag g">Safe</span>App caches, logs, Xcode build data</li>
+          <li><span class="tag g">Safe</span>Device support files, Simulator caches</li>
+          <li><span class="tag g">Safe</span>npm, pnpm, Gradle and Cargo caches</li>
+          <li><span class="tag o">Review</span>Downloads untouched for 90+ days</li>
+          <li><span class="tag o">Review</span>iPhone &amp; iPad backups</li>
+          <li><span class="tag o">Review</span>Xcode archives, node_modules</li>
+          <li><span class="tag b">Info</span>Simulator devices, the Trash</li>
+        </ul>
+      </div>
+      <div class="cell c-undo">
+        <span class="kicker">Trash &amp; History</span>
+        <h3>Undo anything</h3>
+        <p>DiskTree never deletes outright. Every item goes to the Trash and is logged, so you can put it back where it was. Empty the Trash right from the app when you're sure.</p>
+      </div>
+      <div class="cell c-safe">
+        <span class="kicker">Guardrails</span>
+        <h3>Hard to break your Mac</h3>
+        <ul>
+          <li><b>Refuses</b> system locations and other users' files</li>
+          <li><b>Refuses</b> Documents, Library and other standard folders themselves</li>
+          <li><b>Refuses</b> pieces of apps, Photos and Music libraries</li>
+          <li><b>Refuses</b> your keychains</li>
+          <li><b>Warns</b> before iCloud files, app data and device backups</li>
+        </ul>
+      </div>
+      <div class="cell c-priv">
+        <span class="kicker">Privacy</span>
+        <h3>Stays on your Mac</h3>
+        <p>No network access, no analytics, no account. It reads file sizes, not file contents, and never downloads iCloud files just to measure them.</p>
+      </div>
+      <div class="cell c-dev">
+        <span class="kicker">For developers</span>
+        <h3>Knows where your builds hide</h3>
+        <p>If you write code, your Mac is full of things that rebuild themselves. DiskTree finds them.</p>
+        <div class="chips"><span>DerivedData</span><span>iOS DeviceSupport</span><span>CoreSimulator</span><span>node_modules</span><span>~/.npm</span><span>pnpm store</span><span>~/.gradle</span><span>~/.cargo</span><span>Xcode Archives</span></div>
+      </div>
+      <div class="cell c-fast">
+        <span class="kicker">Native</span>
+        <h3>Fast &amp; tiny</h3>
+        <p><span class="big-num">1.4</span> <b class="mono">MB</b></p>
+        <p>SwiftUI, no dependencies. Scans run on several threads with bulk directory reads.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="screens">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>A closer look.</h2>
+      <p>A native Mac app that follows your system's light or dark appearance and feels like it came with your Mac.</p>
+    </div>
+    <div class="gallery">
+      <figure>
+        <div class="frame"><img src="screenshots/overview.png" width="2400" height="1600" loading="lazy" alt="DiskTree Overview: available disk space, a donut chart of space by kind, and the biggest folders"></div>
+        <figcaption><b>Overview</b>Where your space goes, by kind and by folder.</figcaption>
+      </figure>
+      <figure>
+        <div class="frame"><img src="screenshots/cleanup.png" width="2400" height="1600" loading="lazy" alt="DiskTree Clean Up: suggestions for app caches, Xcode build data, device support, old downloads and backups, with sizes and safety labels"></div>
+        <figcaption><b>Clean Up</b>Review exactly what's inside before anything moves.</figcaption>
+      </figure>
+      <figure>
+        <div class="frame"><img src="screenshots/largest.png" width="2400" height="1600" loading="lazy" alt="DiskTree Largest Files: the biggest files on disk with kind, location and date modified"></div>
+        <figcaption><b>Largest Files</b>Filter by size and kind, then reveal in Finder or trash.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Get it in<br>a minute.</h2>
+      <p>Three ways in. All free, all the same app. Requires macOS 14 Sonoma or later, on Apple silicon or Intel.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="badge">1</div>
+        <h3>Download it</h3>
+        <p>Unzip, drag <b>DiskTree</b> to Applications, then right-click it and choose <b>Open</b> the first time.</p>
+        <a class="btn" href="https://github.com/alx-kap/DiskTree/releases/latest/download/DiskTree.zip">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M12 3v13m0 0-5-5m5 5 5-5M4 20h16"/></svg>
+          DiskTree.zip
+        </a>
+      </div>
+      <div class="step">
+        <div class="badge">2</div>
+        <h3>One line</h3>
+        <p>Paste into Terminal. It installs the latest release to <code>~/Applications</code> and opens it, with no security prompt.</p>
+        <div class="code"><pre><span class="p">$ </span><span class="cmd">curl -fsSL https://alx-kap.github.io/DiskTree/install.sh | bash</span></pre><button class="copy" type="button">Copy</button></div>
+      </div>
+      <div class="step">
+        <div class="badge">3</div>
+        <h3>Build it yourself</h3>
+        <p>Needs Swift 5.9+ from Xcode or the Command Line Tools. No dependencies.</p>
+        <div class="code"><pre><span class="cmd">git clone https://github.com/alx-kap/DiskTree.git
+cd DiskTree
+./install.sh</span></pre><button class="copy" type="button">Copy</button></div>
+      </div>
+    </div>
+    <div class="note">
+      <b>Heads up</b>
+      <p>The first time you open the downloaded app, macOS says it can't verify the developer. That's because DiskTree isn't notarized, which requires a paid Apple developer account. Right-click the app and choose <b>Open</b>, or click <b>Open Anyway</b> in System Settings › Privacy &amp; Security. The one-line install and building from source both skip this.</p>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Questions.</h2>
+      <p>Still wondering? <a href="https://github.com/alx-kap/DiskTree/issues">Open an issue</a> on GitHub.</p>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Is it really free?</summary>
+        <p>Yes. DiskTree is open source under the MIT license. No trial, no subscription, and no "upgrade to delete" button at the end of a scan.</p>
+      </details>
+      <details>
+        <summary>Will it delete things on its own?</summary>
+        <p>Never. It only moves what you pick to the Trash, and Trash &amp; History can put items back until you empty the Trash.</p>
+      </details>
+      <details>
+        <summary>What is "System Data," and can DiskTree shrink it?</summary>
+        <p>Much of what macOS calls System Data lives in your home folder's Library: caches, logs, device backups, Xcode and Simulator files. Scan your home folder and DiskTree shows which of those are taking up room. Space macOS can free by itself, like local snapshots, is shown separately so you're not chasing it.</p>
+      </details>
+      <details>
+        <summary>Does it need Full Disk Access?</summary>
+        <p>No. Without it, macOS keeps a few protected folders (like Mail and Messages data) and the inside of the Trash private. Everything else scans normally, and DiskTree tells you when something couldn't be read.</p>
+      </details>
+      <details>
+        <summary>How is it different from DaisyDisk or GrandPerspective?</summary>
+        <p>DiskTree is a free, open-source alternative that pairs the visual map with guided cleanup and an undo history, and it knows about developer clutter like DerivedData, Simulator caches and <code>node_modules</code>.</p>
+      </details>
+      <details>
+        <summary>Does it work on Intel Macs?</summary>
+        <p>Yes. The download is a universal app that runs natively on Apple silicon and Intel Macs with macOS 14 Sonoma or later.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Get your<br>gigabytes<br>back.</h2>
+    <div>
+      <p>Find out what's filling your Mac in the time it takes to make coffee. Free, open source, and 1.4 MB.</p>
+      <a class="btn" href="https://github.com/alx-kap/DiskTree/releases/latest/download/DiskTree.zip">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M12 3v13m0 0-5-5m5 5 5-5M4 20h16"/></svg>
+        <span>Download DiskTree<small>macOS 14+ · Apple silicon &amp; Intel</small></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="icon.png" alt="" width="28" height="28">DiskTree</a>
+    <span>Made by <a href="https://github.com/alx-kap">Alex Kaplewicz</a>. MIT licensed.</span>
+    <nav aria-label="Footer">
+      <a href="https://github.com/alx-kap/DiskTree">GitHub</a>
+      <a href="https://github.com/alx-kap/DiskTree/releases">Releases</a>
+      <a href="https://github.com/alx-kap/DiskTree/issues">Report a bug</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const DISK = 494;
+  const C = { blue: "var(--blue)", orange: "var(--orange)", green: "var(--green)", pink: "var(--pink)", yellow: "var(--yellow)", red: "var(--red)", teal: "var(--teal)", gray: "var(--gray)" };
+  const START = [
+    { n: "Photos Library", s: 92, k: "protected", c: C.orange, why: "DiskTree never reaches inside your Photos library." },
+    { n: "macOS & system", s: 58, k: "protected", c: C.gray, why: "System location. DiskTree won't touch it." },
+    { n: "iPhone backup (2022)", s: 48, k: "review", c: C.red },
+    { n: "Applications", s: 38, k: "protected", c: C.blue, why: "Your apps stay put. DiskTree only removes whole apps, and warns first." },
+    { n: "Documents", s: 33, k: "protected", c: C.yellow, why: "Your documents aren't junk, so they're never suggested." },
+    { n: "Xcode DerivedData", s: 31, k: "safe", c: C.green },
+    { n: "Windows 11 VM", s: 28, k: "review", c: C.teal },
+    { n: "Music", s: 27, k: "protected", c: C.pink, why: "DiskTree won't pick apart your Music library." },
+    { n: "Final Cut render files", s: 22, k: "review", c: C.pink },
+    { n: "Old installers", s: 19, k: "review", c: C.yellow },
+    { n: "node_modules ×23", s: 14, k: "review", c: C.green },
+    { n: "iOS DeviceSupport", s: 12, k: "safe", c: C.green },
+    { n: "App caches", s: 9.6, k: "safe", c: C.blue },
+    { n: "Screen recordings", s: 8, k: "review", c: C.pink },
+    { n: "Simulator caches", s: 6.2, k: "safe", c: C.green },
+    { n: "Trash", s: 5.4, k: "safe", c: C.gray },
+    { n: "Slack cache", s: 3.4, k: "safe", c: C.blue },
+    { n: "Logs", s: 2.1, k: "safe", c: C.gray },
+  ];
+  const LABEL = { safe: "Safe to clean", review: "Review first", protected: "Protected" };
+  const map = document.getElementById("map");
+  const toast = document.getElementById("toast");
+  const freedEl = document.getElementById("freed");
+  const usedText = document.getElementById("usedText");
+  const usedBar = document.getElementById("usedBar");
+  let items, freed, tiles = new Map(), freeTile;
+
+  const fmt = (gb) => (gb >= 10 || Number.isInteger(gb) ? Math.round(gb) : gb.toFixed(1)) + " GB";
+
+  function worst(row, side) {
+    const sum = row.reduce((a, b) => a + b, 0), max = Math.max(...row), min = Math.min(...row);
+    return Math.max((side * side * max) / (sum * sum), (sum * sum) / (side * side * min));
+  }
+  // Squarified treemap (Bruls, Huizing & van Wijk).
+  function squarify(values, x, y, w, h) {
+    const total = values.reduce((a, b) => a + b, 0);
+    const areas = values.map((v) => (v * w * h) / total);
+    const out = [];
+    let i = 0;
+    while (i < areas.length) {
+      const side = Math.min(w, h);
+      const row = [areas[i]];
+      let j = i + 1;
+      while (j < areas.length && worst([...row, areas[j]], side) <= worst(row, side)) row.push(areas[j++]);
+      const sum = row.reduce((a, b) => a + b, 0);
+      if (w >= h) {
+        const cw = sum / h; let cy = y;
+        for (const a of row) { out.push({ x, y: cy, w: cw, h: a / cw }); cy += a / cw; }
+        x += cw; w -= cw;
+      } else {
+        const rh = sum / w; let cx = x;
+        for (const a of row) { out.push({ x: cx, y, w: a / rh, h: rh }); cx += a / rh; }
+        y += rh; h -= rh;
+      }
+      i = j;
+    }
+    return out;
+  }
+
+  function makeTile(it) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tile";
+    b.style.background = it.c;
+    b.innerHTML = `<span class="n"></span><span class="s"></span><span class="t"></span>`;
+    b.querySelector(".n").textContent = it.n;
+    b.querySelector(".s").textContent = fmt(it.s);
+    b.querySelector(".t").textContent = LABEL[it.k];
+    b.setAttribute("aria-label", `${it.n}, ${fmt(it.s)}, ${LABEL[it.k].toLowerCase()}`);
+    b.title = `${it.n} · ${fmt(it.s)} · ${LABEL[it.k]}`;
+    b.addEventListener("click", () => clean(it, b));
+    map.appendChild(b);
+    return b;
+  }
+
+  function place(el, r) {
+    const g = 1.5;
+    el.style.left = r.x + g + "px";
+    el.style.top = r.y + g + "px";
+    el.style.width = Math.max(0, r.w - 2 * g) + "px";
+    el.style.height = Math.max(0, r.h - 2 * g) + "px";
+    el.classList.toggle("small", r.w < 96 || r.h < 62);
+    el.classList.toggle("tiny", r.w < 46 || r.h < 30);
+  }
+
+  function layout() {
+    const used = items.reduce((a, it) => a + it.s, 0);
+    const free = DISK - used;
+    const list = [...items.map((it) => ({ it, s: it.s })), { it: null, s: free }].sort((a, b) => b.s - a.s);
+    const rects = squarify(list.map((d) => d.s), 0, 0, map.clientWidth, map.clientHeight);
+    list.forEach((d, i) => place(d.it ? tiles.get(d.it) : freeTile, rects[i]));
+    freeTile.querySelector(".s").textContent = fmt(free) + " free";
+    usedText.textContent = `${Math.round(used)} of ${DISK} GB`;
+    usedBar.style.width = (used / DISK) * 100 + "%";
+    usedBar.classList.toggle("ok", used / DISK < 0.8);
+    freedEl.textContent = fmt(freed);
+  }
+
+  function clean(it, el) {
+    if (it.k === "protected") {
+      el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+      toast.textContent = "Blocked: " + it.why;
+      return;
+    }
+    freed += it.s;
+    items = items.filter((x) => x !== it);
+    el.classList.add("gone");
+    el.disabled = true;
+    tiles.delete(it);
+    setTimeout(() => el.remove(), 320);
+    const left = items.filter((x) => x.k !== "protected").length;
+    toast.textContent = left
+      ? `Moved “${it.n}” to the Trash. ${it.k === "review" ? "You reviewed it first, right?" : "Apps rebuild it as needed."}`
+      : "All clear. That's everything DiskTree would suggest here.";
+    layout();
+  }
+
+  function reset() {
+    map.innerHTML = "";
+    tiles = new Map();
+    items = START.map((x) => ({ ...x }));
+    freed = 0;
+    freeTile = document.createElement("div");
+    freeTile.className = "tile free";
+    freeTile.innerHTML = `<span class="n">Free space</span><span class="s"></span>`;
+    map.appendChild(freeTile);
+    for (const it of items) tiles.set(it, makeTile(it));
+    map.classList.add("instant");
+    layout();
+    requestAnimationFrame(() => requestAnimationFrame(() => map.classList.remove("instant")));
+    toast.textContent = "Try it: click a block to clean it up.";
+  }
+
+  document.getElementById("reset").addEventListener("click", reset);
+  let rt;
+  new ResizeObserver(() => {
+    if (!items) return;
+    map.classList.add("instant");
+    layout();
+    clearTimeout(rt);
+    rt = setTimeout(() => map.classList.remove("instant"), 100);
+  }).observe(map);
+  reset();
+
+  document.querySelectorAll(".copy").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const text = btn.parentElement.querySelector(".cmd").textContent;
+      try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+      catch { btn.textContent = "Select it"; }
+      setTimeout(() => (btn.textContent = "Copy"), 1600);
+    });
+  });
+})();
+</script>
+</body>
+</html>
