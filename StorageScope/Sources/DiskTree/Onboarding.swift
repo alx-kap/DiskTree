@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 import Carbon
 
-/// Tracks the permissions StorageScope needs, re-checking while the setup screen is open
+/// Tracks the permissions DiskTree needs, re-checking while the setup screen is open
 /// so rows turn green as soon as the user flips a switch in System Settings.
 @MainActor
 final class Permissions: ObservableObject {
@@ -51,7 +51,7 @@ final class Permissions: ObservableObject {
         }
     }
 
-    /// Shows macOS's "Allow StorageScope to control Finder?" prompt, or opens Settings if it was already declined.
+    /// Shows macOS's "Allow DiskTree to control Finder?" prompt, or opens Settings if it was already declined.
     func requestFinder() {
         if finder == .denied {
             Self.openSettings("Privacy_Automation")
@@ -157,8 +157,8 @@ struct OnboardingView: View {
                     Image(systemName: "chart.pie.fill")
                         .font(.system(size: 52))
                         .foregroundStyle(.linearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    Text("Welcome to StorageScope").font(.largeTitle.bold())
-                    Text("Two quick steps let StorageScope measure your files and clean up in one click. Nothing ever leaves your Mac.")
+                    Text("Welcome to DiskTree").font(.largeTitle.bold())
+                    Text("Two quick steps let DiskTree measure your files and clean up in one click. Nothing ever leaves your Mac.")
                         .font(.title3)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -170,7 +170,7 @@ struct OnboardingView: View {
                         number: 1,
                         symbol: "folder.fill", tint: .blue,
                         title: "Your files, photos & music",
-                        detail: "Lets StorageScope measure Desktop, Documents, Downloads and your Photos and Music libraries. macOS asks once for each.",
+                        detail: "Lets DiskTree measure Desktop, Documents, Downloads and your Photos and Music libraries. macOS asks once for each.",
                         granted: permissions.folders
                     ) {
                         Button(permissions.foldersDenied ? "Open Settings" : "Allow…") { permissions.requestFolders() }
@@ -178,7 +178,7 @@ struct OnboardingView: View {
                             .disabled(permissions.askingFolders)
                     } help: {
                         if permissions.foldersDenied {
-                            Text("Something was turned off. Open Settings and turn StorageScope on, then come back here.")
+                            Text("Something was turned off. Open Settings and turn DiskTree on, then come back here.")
                         } else {
                             Text("Click Allow (or OK) on each prompt that appears.")
                         }
@@ -188,7 +188,7 @@ struct OnboardingView: View {
                         number: 2,
                         symbol: "trash.fill", tint: .red,
                         title: "Empty the Trash",
-                        detail: "Lets StorageScope ask Finder to empty the Trash, so you never have to switch apps to actually free the space.",
+                        detail: "Lets DiskTree ask Finder to empty the Trash, so you never have to switch apps to actually free the space.",
                         granted: permissions.finder == .granted
                     ) {
                         Button(permissions.finder == .denied ? "Open Settings" : "Allow…") { permissions.requestFinder() }
@@ -196,7 +196,7 @@ struct OnboardingView: View {
                             .disabled(permissions.askingFinder)
                     } help: {
                         if permissions.finder == .denied {
-                            Text("This was turned off earlier. In Automation, open StorageScope and turn on Finder.")
+                            Text("This was turned off earlier. In Automation, open DiskTree and turn on Finder.")
                         } else {
                             Text("macOS will ask once. Click OK.")
                         }

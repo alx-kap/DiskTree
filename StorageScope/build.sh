@@ -1,12 +1,12 @@
 #!/bin/zsh
-# Builds StorageScope.app into ./build
+# Builds DiskTree.app into ./build
 set -euo pipefail
 cd "$(dirname "$0")"
 swift build -c release
-APP=build/StorageScope.app
+APP=build/DiskTree.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp .build/release/StorageScope "$APP/Contents/MacOS/"
+cp .build/release/DiskTree "$APP/Contents/MacOS/"
 cp Support/Info.plist "$APP/Contents/"
 if [[ ! -f build/AppIcon.icns ]]; then
   ICONSET=build/AppIcon.iconset

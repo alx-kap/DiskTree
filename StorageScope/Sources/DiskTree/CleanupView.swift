@@ -165,7 +165,7 @@ private struct CleanupCard: View {
             let own = store.ownItemsInTrash
             VStack(alignment: .trailing, spacing: 0) {
                 Text(own.reduce(Int64(0)) { $0 + $1.size }.bytes).font(.title2.bold()).monospacedDigit()
-                Text("from StorageScope, at least").font(.caption).foregroundStyle(.secondary)
+                Text("from DiskTree, at least").font(.caption).foregroundStyle(.secondary)
             }
         } else {
             measuredSize

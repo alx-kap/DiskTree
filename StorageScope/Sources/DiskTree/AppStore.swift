@@ -106,7 +106,7 @@ final class AppStore: ObservableObject {
             guard let result else {
                 self.alert = AlertInfo(
                     title: "Couldn't scan “\(target.title)”",
-                    message: "macOS keeps this location private. If it's your Desktop, Documents or Downloads, turn StorageScope on in System Settings › Privacy & Security › Files & Folders."
+                    message: "macOS keeps this location private. If it's your Desktop, Documents or Downloads, turn DiskTree on in System Settings › Privacy & Security › Files & Folders."
                 )
                 return
             }
@@ -300,7 +300,7 @@ final class AppStore: ObservableObject {
         }
     }
 
-    /// Items StorageScope moved to the Trash that are still sitting there.
+    /// Items DiskTree moved to the Trash that are still sitting there.
     var ownItemsInTrash: [TrashRecord] { history.filter(\.canPutBack) }
 
     /// Re-checks whether macOS lets us see inside the Trash (it doesn't without Full Disk Access).
@@ -336,8 +336,8 @@ final class AppStore: ObservableObject {
                 )
             } else if finderError != nil {
                 self.alert = AlertInfo(
-                    title: own.isEmpty ? "Couldn't empty the Trash" : "Erased what StorageScope put in the Trash",
-                    message: "To empty everything else from here, allow StorageScope to control Finder in System Settings › Privacy & Security › Automation. Or open the Trash and empty it there.",
+                    title: own.isEmpty ? "Couldn't empty the Trash" : "Erased what DiskTree put in the Trash",
+                    message: "To empty everything else from here, allow DiskTree to control Finder in System Settings › Privacy & Security › Automation. Or open the Trash and empty it there.",
                     action: ("Open Trash", { Finder.open(TrashBin.url) })
                 )
             } else {

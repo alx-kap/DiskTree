@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key><string>StorageScope</string>
-    <key>CFBundleDisplayName</key><string>StorageScope</string>
-    <key>CFBundleIdentifier</key><string>local.storagescope.app</string>
-    <key>CFBundleExecutable</key><string>StorageScope</string>
+    <key>CFBundleName</key><string>DiskTree</string>
+    <key>CFBundleDisplayName</key><string>DiskTree</string>
+    <key>CFBundleIdentifier</key><string>local.disktree.app</string>
+    <key>CFBundleExecutable</key><string>DiskTree</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>1.0</string>
     <key>CFBundleVersion</key><string>1</string>
@@ -14,11 +14,11 @@
     <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSPrincipalClass</key><string>NSApplication</string>
-    <key>NSAppleEventsUsageDescription</key><string>StorageScope asks Finder to empty the Trash when you choose Empty Trash.</string>
-    <key>NSDesktopFolderUsageDescription</key><string>StorageScope measures how much space your Desktop uses.</string>
-    <key>NSDocumentsFolderUsageDescription</key><string>StorageScope measures how much space your Documents use.</string>
-    <key>NSDownloadsFolderUsageDescription</key><string>StorageScope measures your Downloads and finds old files you may not need.</string>
-    <key>NSRemovableVolumesUsageDescription</key><string>StorageScope can measure external drives you choose to scan.</string>
-    <key>NSNetworkVolumesUsageDescription</key><string>StorageScope can measure network drives you choose to scan.</string>
+    <key>NSAppleEventsUsageDescription</key><string>DiskTree asks Finder to empty the Trash when you choose Empty Trash.</string>
+    <key>NSDesktopFolderUsageDescription</key><string>DiskTree measures how much space your Desktop uses.</string>
+    <key>NSDocumentsFolderUsageDescription</key><string>DiskTree measures how much space your Documents use.</string>
+    <key>NSDownloadsFolderUsageDescription</key><string>DiskTree measures your Downloads and finds old files you may not need.</string>
+    <key>NSRemovableVolumesUsageDescription</key><string>DiskTree can measure external drives you choose to scan.</string>
+    <key>NSNetworkVolumesUsageDescription</key><string>DiskTree can measure network drives you choose to scan.</string>
 </dict>
 </plist>

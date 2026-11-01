@@ -85,7 +85,7 @@ struct HistoryView: View {
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Trash & History").font(.largeTitle.bold())
-                    Text("Everything StorageScope has moved to the Trash. Put things back as long as the Trash hasn't been emptied.")
+                    Text("Everything DiskTree has moved to the Trash. Put things back as long as the Trash hasn't been emptied.")
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -108,7 +108,7 @@ struct HistoryView: View {
 
             if store.history.isEmpty {
                 ContentUnavailableView("Nothing Moved Yet", systemImage: "clock.arrow.circlepath",
-                                       description: Text("Items you move to the Trash from StorageScope will show up here."))
+                                       description: Text("Items you move to the Trash from DiskTree will show up here."))
                     .frame(maxHeight: .infinity)
             } else {
                 List {
@@ -164,9 +164,9 @@ struct HistoryView: View {
     private var trashSummary: String {
         if store.trashIsHidden {
             let own = store.ownItemsInTrash
-            if own.isEmpty { return "macOS hides what's inside from StorageScope, but Empty Trash still works." }
+            if own.isEmpty { return "macOS hides what's inside from DiskTree, but Empty Trash still works." }
             let size = own.reduce(Int64(0)) { $0 + $1.size }
-            return "\(own.count) item\(own.count == 1 ? "" : "s") from StorageScope · \(size.bytes), plus anything you trashed yourself"
+            return "\(own.count) item\(own.count == 1 ? "" : "s") from DiskTree · \(size.bytes), plus anything you trashed yourself"
         }
         guard let item = cleanup.item("trash") else { return "" }
         switch item.state {

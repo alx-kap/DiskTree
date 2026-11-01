@@ -10,14 +10,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct StorageScopeApp: App {
+struct DiskTreeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var store = AppStore()
     @StateObject private var cleanup = CleanupStore()
     @AppStorage("setupDone") private var setupDone = false
 
     var body: some Scene {
-        Window("StorageScope", id: "main") {
+        Window("DiskTree", id: "main") {
             Group {
                 if setupDone {
                     ContentView()

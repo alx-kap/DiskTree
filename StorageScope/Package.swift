@@ -2,9 +2,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "StorageScope",
+    name: "DiskTree",
     platforms: [.macOS(.v14)],
     targets: [
-        .executableTarget(name: "StorageScope", path: "Sources/StorageScope")
+        .executableTarget(name: "DiskTree", path: "Sources/DiskTree")
     ]
 )
