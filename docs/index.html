@@ -172,7 +172,9 @@ nav.top .get:hover { background: var(--ink); color: var(--yellow); }
   margin-top: auto; font: 600 9.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
   border: 1.5px solid var(--ink); padding: 3px 5px; background: rgba(255,255,255,.45);
 }
-.tile.small .n, .tile.small .t { display: none; }
+.tile.small .t { display: none; }
+.tile.small .n { font-size: 12px; }
+.tile.mini .n { display: none; }
 .tile.tiny > * { display: none; }
 .tile.free {
   cursor: default; filter: none;
@@ -702,7 +704,8 @@ cd DiskTree
     el.style.top = r.y + g + "px";
     el.style.width = Math.max(0, r.w - 2 * g) + "px";
     el.style.height = Math.max(0, r.h - 2 * g) + "px";
-    el.classList.toggle("small", r.w < 96 || r.h < 62);
+    el.classList.toggle("small", r.w < 110 || r.h < 70);
+    el.classList.toggle("mini", r.w < 60 || r.h < 44);
     el.classList.toggle("tiny", r.w < 46 || r.h < 30);
   }
 
